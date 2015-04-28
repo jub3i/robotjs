@@ -124,6 +124,48 @@ void clickMouse(MMMouseButton button)
 	toggleMouse(false, button);
 }
 
+//Code from http://stackoverflow.com/a/1483666/2233771
+void doubleClick(MMMouseButton button)
+{
+	//clickMouse(button);
+	
+#if defined(IS_MACOSX)
+	//Double click for Mac.
+
+	const CGPoint currentPos = CGPointFromMMPoint(getMousePos());
+	const CGEventType mouseType = MMMouseToCGEventType(true, button);
+	/*CGEventRef event = CGEventCreateMouseEvent(NULL,
+	                                           mouseType,
+	                                           currentPos,
+	                                           (CGMouseButton)button);*/
+
+	CGEventRef theEvent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, currentPos, kCGMouseButtonLeft);  
+	
+	//Set event to double click.							
+	CGEventSetIntegerValueField(theEvent, kCGMouseEventClickState, 2);
+											
+	CGEventPost(kCGHIDEventTap, theEvent);  
+																
+	CGEventSetType(theEvent, kCGEventLeftMouseUp);  
+	CGEventPost(kCGHIDEventTap, theEvent);  
+
+	/*CGEventSetType(theEvent, kCGEventLeftMouseDown);  
+	CGEventPost(kCGHIDEventTap, theEvent);  
+
+	CGEventSetType(theEvent, kCGEventLeftMouseUp); 
+	CGEventPost(kCGHIDEventTap, theEvent); */
+
+	CFRelease(theEvent); 
+
+#else
+	//Double click for everything else, might need a delay between the clicks.
+	clickMouse(button);
+	
+	clickMouse(button);
+	
+#endif
+}
+
 /*
  * A crude, fast hypot() approximation to get around the fact that hypot() is
  * not a standard ANSI C function.
